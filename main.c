@@ -6,6 +6,7 @@
  */ 
 
 #define F_CPU 16000000
+#define BUTTON_PIN PINA
 #include <avr/io.h>
 #include <util/delay.h>
 int main(void)
@@ -85,6 +86,11 @@ int main(void)
 		setMotorB6(spd);
 	}
 	
+	void setRightMotors(float spd) {
+		setMotorE3(spd);
+		setMotorE4(spd);
+	}
+	
 	//----------------------------------------------------------
 	//BUTTON CODE
 	//----------------------------------------------------------
@@ -100,50 +106,123 @@ int main(void)
 	
 	void checkButtons()
 	{
-		if(!(PIND & 0x01)){
+		if(!(BUTTON_PIN & 0x01)){
 			buttonZero = 1;
 		}else{
 			buttonZero = 0;
-		}if(!(PIND & 0x02)){
+		}if(!(BUTTON_PIN & 0x02)){
 			buttonOne = 1;
 		}else{
 			buttonOne = 0;
-		}if(!(PIND & 0x04)){
+		}if(!(BUTTON_PIN & 0x04)){
 			buttonTwo = 1;
 		}else{
 			buttonTwo = 0;
-		}if(!(PIND & 0x08)){
+		}if(!(BUTTON_PIN & 0x08)){
 			buttonThree = 1;
 		}else{
 			buttonThree = 0;
-		}if(!(PIND & 0x10)){
+		}if(!(BUTTON_PIN & 0x10)){
 			buttonFour = 1;
 		}else{
 			buttonFour = 0;
-		}if(!(PIND & 0x20)){
+		}if(!(BUTTON_PIN & 0x20)){
 			buttonFive = 1;
 		}else{
 			buttonFive = 0;
-		}if(!(PIND & 0x40)){
+		}if(!(BUTTON_PIN & 0x40)){
 			buttonSix = 1;
 		}else{
 			buttonSix = 0;
-		}if(!(PIND & 0x80)){
+		}if(!(BUTTON_PIN & 0x80)){
 			buttonSeven = 1;
 		}else{
 			buttonSeven = 0;
 		}
 	}
 	
+	int counter = 2;
+	float speeds[6] = {-0.4, -0.2, 0.0, 0.2, 0.3, 0.4};
+	int speedUpState = 0;
+	int speedUpLastState = 0;
+	int speedDownState = 0;
+	int speedDownLastState = 0;
+	//increment or decrement counter that chooses motor speeds
+	void updateCounter() {
+		if (speedUpState == 1 && speedUpLastState == 0) {
+			//up toggle button was just pushed, increment speed counter
+			counter++;
+		}
+		if (speedDownState == 1 && speedDownLastState == 0) {
+			//down toggle button was just pushed, decrement speed counter
+			counter--;
+		}
+		if (counter > 5) {
+			counter = 5;
+		}
+		if (counter < 0) {
+			counter = 0;
+		}
+		
+		speedUpLastState = speedUpState;
+		speedDownLastState = speedDownState;
+	}
+	
+	int count = 0;
+	
 	while(1) {
 		//main loop to do stuff
 		
 		//always call checkButtons() to read new button values
+		/*
 		checkButtons();
-		
+		if (buttonZero == 1)
+		{
+			speedDownState = 1;
+		}
 		if (buttonOne == 1)
 		{
-			setLeftMotors(0.5);
+			speedUpState = 1;
 		}
+		updateCounter();
+		setLeftMotors(speeds[counter]*buttonTwo);
+		setRightMotors(speeds[counter]*buttonThree);
+		*/
+		
+		checkButtons();
+		
+		if (buttonFour == 1)
+		{
+			setLeftMotors(1.0);
+			setRightMotors(1.0);
+		}else
+		{
+			setLeftMotors(-1.0);
+			setRightMotors(-1.0);
+		}
+		
+		/*
+		count += 1;
+		
+		if (count <= 100)
+		{
+			setRightMotors(0.5);
+			setLeftMotors(0.5);
+		}else if (count > 100 && count <= 200)
+		{
+			setRightMotors(0.0);
+			setLeftMotors(0.0);
+		}else if (count > 200 && count <= 300)
+		{
+			setRightMotors(-0.5);
+			setLeftMotors(-0.5);
+		}else if (count > 300 && count <= 400)
+		{
+			setRightMotors(0.0);
+			setLeftMotors(0.0);
+		}else{
+			count = 0;
+		}
+		*/
 	}
 }
